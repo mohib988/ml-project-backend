@@ -1,3 +1,5 @@
 ./back
 ./env
 ./ml_pipeline/newone
+.env
+env

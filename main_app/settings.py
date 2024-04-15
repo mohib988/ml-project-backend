@@ -152,16 +152,6 @@ WSGI_APPLICATION = "main_app.wsgi.application"
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'defaultdb',
-        'USER': 'avnadmin',
-        'PASSWORD': 'AVNS_3Wb0CYGfOp8VSKIiyKC',
-        'HOST': 'pg-2a636ad5-qureshimohib819-2b1f.b.aivencloud.com',
-        'PORT': 27936
-    }
-}
 
 
 # Password validation
