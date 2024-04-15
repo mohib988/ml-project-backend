@@ -8,3 +8,4 @@ pandas==2.1.4
 pydantic==1.10.14
 scikit-learn==1.4.0
 zenml==0.55.3
+python-dotenv==1.0.1
