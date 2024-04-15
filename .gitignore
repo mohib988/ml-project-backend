@@ -3,3 +3,5 @@
 ./ml_pipeline/newone
 .env
 env
+
+./main_app/__pycache__
