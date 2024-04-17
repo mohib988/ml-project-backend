@@ -35,7 +35,7 @@ def main(df):
     
     result_list = []
 
-    for (pos_id,ntn,location,date,hour), group in df.groupby(['pos_id','ntn','location','date', 'hour',]):
+    for (pos_id, date, hour, location, ntn), group in df.groupby(['pos_id', 'date', 'hour', 'location', 'ntn']):
         invoices = group['invoice_no']
         
         # Find missing invoices or gaps in ranges
