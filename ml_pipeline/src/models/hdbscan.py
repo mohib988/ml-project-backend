@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from typing import List, Union
-from zenml import step
+# from zenml import step
 
 class HDBClustering:
   def __init__(self,df:pd.DataFrame,min_cluster:int,**kargs):
@@ -44,7 +44,7 @@ class HDBClustering:
       # Filter rows marked as anomalies
       # self.df["sales_value"] = np.expm1(np.abs(self.df["sales_value"]))
       return outliers
-@step
+# @step
 def run_hdb_clustering(df:pd.DataFrame,min_cluster:int=10,hour:bool=True)->Union[np.ndarray, List[int]]:
   HDB_clustering=HDBClustering(df,min_cluster)
   outliers=HDB_clustering.run_hdb_scan(hour=5)

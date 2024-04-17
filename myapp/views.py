@@ -229,14 +229,15 @@ class FilterView(generics.ListAPIView):
         else:
             return self.anomaly_serializer_class
 
-def connect_to_db(dbname, user, password, host, query):
-    # try:
-        # connection = psycopg.connect(dbname=dbname,
-        #                             user=user,
-        #                             password= password,
-        #                             host=host,
-        #                             row_factory=dict_row)
-        connection=sqlite3.connect("db.sqlite3")
+def connect_to_db(dbname, user, password, host, query,port):
+    try:
+        connection = psycopg.connect(dbname=dbname,
+                                    user=user,
+                                    password= password,
+                                    host=host,
+                                    port=port,
+                                    row_factory=dict_row)
+        # connection=sqlite3.connect("db.sqlite3")
         # Create a cursor object to execute SQL queries
         cursor = connection.cursor()
         # Example: Execute a SQL query
@@ -248,7 +249,11 @@ def connect_to_db(dbname, user, password, host, query):
         cursor.close()
         connection.close()
         df=pd.DataFrame(rows,columns=columns)
+        print(df)
         return df
+    except Exception as e:
+        print(e)
+        return 
 
         
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -257,16 +262,33 @@ def connect_to_db(dbname, user, password, host, query):
 def add_location(request):
     try:
         print(request.data)
-        name = request.data['dbname']
+        dbname = request.data['dbname']
         username = request.data['username']
         host = request.data['host']
         password = request.data['password']
         query = request.data['query']
-        df = connect_to_db(name, username, password, host, query)
+        port = request.data['port']
+        df = connect_to_db(dbname, username, password, host, query)
         df.drop(columns=["id"],inplace=True)
         data=df.to_dict(orient='records')
         print(data)
         serializer = serializers.LocationSerializer(data=data, many=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated, IsAdminUser])
+@api_view(['POST'])
+def add_anomaly(request):
+    try:
+        print(request.data)
+        serializer = serializers.AnomalyInfoSerializer(data=request.data, many=True)
         
         if serializer.is_valid():
             serializer.save()
@@ -282,12 +304,13 @@ def add_location(request):
 @api_view(['POST'])
 def add_ntn(request):
     try:
-        name = request.data['dbname']
+        dbname = request.data['dbname']
         username = request.data['username']
         host = request.data['host']
         password = request.data['password']
         query = request.data['query']
-        df = connect_to_db(name, username, password, host, query)
+        port = request.data['port']
+        df = connect_to_db(dbname, username, password, host, query)
         data=df.to_dict(orient='records')
        
         serializer = serializers.NTNSerializer(data=data, many=True)
@@ -313,28 +336,30 @@ def missing_invoices(request):
         print(request.data)
         print(request.data)
         try:
-            name = request.data['dbname']
+            dbname = request.data['dbname']
             username = request.data['username']
             host = request.data['host']
             password = request.data['password']
             query = request.data['query']
+            port = request.data['port']
             print(request.data)
-            df = connect_to_db(name, username, password, host, query)
-            df = df[['srb_invoice_id', 'pos_id',  'invoice_no', 'created_date_time',   'location_id', 'ntn_id']]
+            df = connect_to_db(dbname, username, password, host, query,port)
+
+            df = df[['srb_invoice_id', 'pos_id',  'invoice_no', 'created_date_time',   'location', 'ntn']]
+            df['created_date_time'] = df['created_date_time'].astype(str)
             
-            df["location"] = df["location_id"]
-            df["ntn"] = df["ntn_id"]
-            location_names = {location.pk: location.location for location in models.Location.objects.all()}
-            ntn_names = {ntn.pk: ntn.name for ntn in models.NTN.objects.all()}
-            df['name'] = df['ntn'].map(ntn_names)
-            df['location'] = df['location'].map(location_names)
-            # print(df2)
+            # df["location"] = df["location_id"]
+            # df["ntn"] = df["ntn_id"]
+            # location_names = {location.pk: location.location for location in models.Location.objects.all()}
+            # ntn_names = {ntn.pk: ntn.name for ntn in models.NTN.objects.all()}
+            # df['name'] = df['ntn'].map(ntn_names)
+            # df['location'] = df['location'].map(location_names)
+            # # print(df2)
             result = missing_invoice.main(df)
             print(result)
             for i in result:
                 i['location'] = models.Location.objects.get(location=i['location']).pk
               
-            print(result)
         
             serializer = serializers.MissingInvoiceSerializer(data=result, many=True)
             if serializer.is_valid():
@@ -356,30 +381,36 @@ def submit_data(request):
     if request.method == "POST":
         print(request.data)
         try:
-            name = request.data['dbname']
+            dbname = request.data['dbname']
             username = request.data['username']
             host = request.data['host']
             password = request.data['password']
             query = request.data['query']
-            df = connect_to_db(name, username, password, host, query)
-            df = df[['srb_invoice_id', 'pos_id', 'invoice_date', 'invoice_no', 'rate_value', 'sales_tax', 'consumer_name', 'consumer_ntn', 'consumer_address', 'tariff_code', 'extra_info', 
-                         'pos_user', 'pos_pass', 'is_active', 'created_date_time', 'invoice_type', 'consider_for_annex',  'location_id', 'ntn_id', 'sales_value']]
-            
-            df["location"] = df["location_id"]
-            df["ntn"] = df["ntn_id"]
-            location_names = {location.pk: location.location for location in models.Location.objects.all()}
-            ntn_names = {ntn.pk: ntn.name for ntn in models.NTN.objects.all()}
+            port = request.data['port']
+            contamination = request.data['contamination']
+            min_cluster = request.data['min_cluster']
 
-# Then, use the map function to lookup names based on primary keys
-            df['name'] = df['ntn'].map(ntn_names)
-            df['location'] = df['location'].map(location_names)
+            df = connect_to_db(dbname, username, password, host, query,port)
+            df = df[['srb_invoice_id', 'pos_id', 'invoice_date', 'invoice_no', 'rate_value', 'sales_tax', 'consumer_name', 'consumer_ntn', 'consumer_address', 'tariff_code', 'extra_info', 
+                         'pos_user', 'pos_pass', 'is_active', 'created_date_time', 'invoice_type', 'consider_for_annex',  'location', 'ntn',"name", 'sales_value']]
+            df['invoice_date'] = df['invoice_date'].astype(str)
+            df['created_date_time'] = df['created_date_time'].astype(str)
+            
+#             df["location"] = df["location_id"]
+#             df["ntn"] = df["ntn_id"]
+#             location_names = {location.pk: location.location for location in models.Location.objects.all()}
+#             ntn_names = {ntn.pk: ntn.name for ntn in models.NTN.objects.all()}
+
+# # Then, use the map function to lookup names based on primary keys
+#             df['name'] = df['ntn'].map(ntn_names)
+#             df['location'] = df['location'].map(location_names)
             df.rename(columns={'consider_for_annex': 'consider_for_Annex'}, inplace=True)
             df1 = df.to_dict(orient='records')
             
             serializer = serializers.AnomalySerializer(data=df1, many=True)
             
             if serializer.is_valid():
-                prediction = run_pipeline.main(df)
+                prediction = run_pipeline.main(df,contamination=contamination,min_cluster=min_cluster)
                 df['anomaly'] = prediction
                 df.rename(columns={'consider_for_Annex': 'consider_for_annex'}, inplace=True)
                 data = df.to_dict(orient='records')

@@ -1,6 +1,6 @@
 import json
 import pandas as pd
-from zenml import step
+# from zenml import step
 import logging
 
 class Ingest:
@@ -8,7 +8,7 @@ class Ingest:
         self.path=path
     def get_data(self)->pd.DataFrame:
         return pd.read_csv(self.path)
-@step
+# @step
 def ingest_data(path:str)->pd.DataFrame:
     try:
         logging.info("getting the data from path",path)
@@ -17,7 +17,7 @@ def ingest_data(path:str)->pd.DataFrame:
         logging.error("Error in getting the data from path",path)
         logging.error(e)
         raise e
-@step
+# @step
 def make_data(df_json_str)->pd.DataFrame:
     try:
         df_dict_list = json.loads(df_json_str)

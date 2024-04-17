@@ -1,5 +1,5 @@
 import pandas as pd
-from zenml import step
+# from zenml import step
 from typing import Tuple
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
@@ -40,7 +40,7 @@ class Isolation_Forest:
 
 # Example usage:
 # Initialize IsolationForest object
-@step
+# @step
 def run_isolation_forest(df: pd.DataFrame,contamination:float=0.05) -> Union[np.ndarray, List[int]]:
     isolationForest = Isolation_Forest(contamination)
     # Apply Isolation Forest to the input DataFrame
