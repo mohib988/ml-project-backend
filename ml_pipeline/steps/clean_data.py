@@ -1,9 +1,9 @@
 import logging
 import pandas as pd
-from zenml import step
-from src.data_cleaning import DataCleaner, DataDivideStratedy,DataPreprocessingStrategy
+# from zenml import step
+from ..src.data_cleaning import DataCleaner, DataDivideStratedy,DataPreprocessingStrategy
 from typing import Union,Tuple,Annotated
-@step
+# @step
 def clean_data(df: pd.DataFrame)->pd.DataFrame :
     try:
         process_strategy=DataPreprocessingStrategy()
@@ -14,7 +14,7 @@ def clean_data(df: pd.DataFrame)->pd.DataFrame :
     except Exception as e:
         logging.error("Error in Data Preprocessing", e)
         raise e
-@step
+# @step
 def split_data(df: pd.DataFrame)->Tuple[Annotated[pd.DataFrame, "X_train"],Annotated[pd.DataFrame, "X_test"],Annotated[pd.Series, "y_train"],Annotated[pd.Series, "y_test"]]:
     try:
         divide_strategy=DataDivideStratedy()

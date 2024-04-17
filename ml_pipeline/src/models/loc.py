@@ -1,6 +1,6 @@
 from sklearn.neighbors import LocalOutlierFactor
 from pandas import DataFrame
-from zenml import step
+# from zenml import step
 import logging
 
 class LocalOutlierDetection:
@@ -18,7 +18,7 @@ class LocalOutlierDetection:
             logging.error("Error in LocalOutlierDetection")
             raise e
 
-@step
+# @step
 def run_loc(df: DataFrame) -> DataFrame:
     loc = LocalOutlierDetection()
     df = loc.fit_predict(df)

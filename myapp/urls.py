@@ -11,5 +11,6 @@ urlpatterns = [
   # path("anomaly_check/", views.anomaly_check, name="anomaly_check"),
   path("add_ntn/", views.add_ntn, name="add_ntn"),
   path("add_location/", views.add_location, name="add_location"),
+  path("add_anomaly/", views.add_anomaly, name="add_anomaly"),
   # path("add_pos/", views.add_pos, name="add_pos"),
 ]

@@ -12,11 +12,11 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
 )
-from zenml import step
-import mlflow
-from zenml.client import Client
+# from zenml import step
+# import mlflow
+# from zenml.client import Client
 
-experiment_tracker=Client().active_stack.experiment_tracker 
+# experiment_tracker=Client().active_stack.experiment_tracker 
 
 
 class ClassificationEvaluator:
@@ -42,7 +42,7 @@ class ClassificationEvaluator:
 
 
 
-@step(experiment_tracker=experiment_tracker.name)
+# @step(experiment_tracker=experiment_tracker.name)
 def evaluate(model:ClassifierMixin, X_test:pd.DataFrame, y_test:pd.Series)->Tuple[
         Annotated[float, "average_precision"],
         Annotated[np.ndarray, "false_positive_rate"],
@@ -62,7 +62,7 @@ def evaluate(model:ClassifierMixin, X_test:pd.DataFrame, y_test:pd.Series)->Tupl
         metrics = {"average_precision": average_precision, "false_positive_rate":np.mean(false_positive_rate)
         , "true_positive_rate":np.mean(true_positive_rate)
         , "accuracy":accuracy}
-        mlflow.log_metrics(metrics)
+        # mlflow.log_metrics(metrics)
         return average_precision,false_positive_rate,true_positive_rate,accuracy
     except Exception as e:
         raise e
